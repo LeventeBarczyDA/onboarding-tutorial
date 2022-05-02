@@ -1,0 +1,121 @@
+module Passport where 
+
+import DA.Optional (fromOptional)
+
+template Passport 
+  with 
+    investor: Party 
+    provider: Party 
+    verifier: Party 
+
+    expires: Time
+
+  where 
+    signatory investor, provider, verifier 
+
+    key (provider, investor): (Party, Party)
+    maintainer key._1
+
+template Support 
+  with 
+    investor: Party  
+    provider: Party 
+    verifier: Party 
+
+    granted: Time
+    renewed: Time
+    warning: Time 
+    expires: Time 
+    documents: Text 
+  where 
+    signatory investor, provider, verifier 
+    ensure renewed < warning && warning < expires 
+
+    choice WarnInvestor: ContractId DocumentationRequest 
+        with 
+              prompt: Text
+      controller provider 
+        do 
+          now <- getTime 
+          --assertMsg "Can only warn within warning window" (warning < now)
+          create DocumentationRequest 
+            with 
+              originalGranted = Some granted
+              existingDocuments = Some documents
+              ..
+
+template PassportRequest 
+  with 
+    investor: Party 
+    provider: Party 
+  where 
+    signatory investor 
+    observer provider
+
+    choice RequestDocumentation: ContractId DocumentationRequest 
+        with 
+          verifier: Party 
+          prompt: Text 
+          expires: Time
+          
+      controller provider 
+        do 
+          now <- getTime
+          create DocumentationRequest 
+            with 
+              originalGranted = None
+              warning = now
+              existingDocuments = None
+              ..
+
+template DocumentationRequest 
+  with 
+    investor: Party 
+    provider: Party 
+    prompt: Text 
+    verifier: Party 
+
+    originalGranted: Optional Time
+    warning: Time 
+    expires: Time 
+    existingDocuments: Optional Text 
+  where 
+    signatory investor, provider 
+
+    choice UploadDocuments: ContractId ReviewRequest 
+        with 
+          documents: Text 
+      controller investor 
+        do 
+          create ReviewRequest with .. 
+
+template ReviewRequest 
+  with 
+    investor: Party 
+    provider: Party 
+    prompt: Text 
+    verifier: Party 
+    documents: Text
+    originalGranted: Optional Time
+  where 
+    signatory investor, provider 
+    observer verifier
+
+    choice ApproveRequest: (ContractId Passport, ContractId Support)
+      with 
+        warning: Time 
+        expires: Time 
+      controller verifier
+        do 
+          now <- getTime
+          passport <- do 
+            passportLookup <- lookupByKey @Passport (provider, investor) 
+            case passportLookup of 
+              Some p -> pure p 
+              None -> create Passport with .. 
+          support <- create Support 
+            with 
+              granted = fromOptional now originalGranted
+              renewed = now
+              ..
+          return (passport, support)

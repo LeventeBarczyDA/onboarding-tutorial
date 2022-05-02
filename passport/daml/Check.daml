@@ -1,0 +1,49 @@
+module Check where 
+
+import Passport 
+
+template RequestPassportCheck 
+  with 
+    investor: Party 
+    requestor: Party 
+    provider: Party 
+  where 
+    signatory requestor 
+    observer provider 
+
+    choice Check: Either (ContractId InvalidPassport) (ContractId ValidPassport)
+      controller provider 
+        do 
+          asOf <- getTime
+          passportLookup <- lookupByKey @Passport (provider, investor) 
+          case passportLookup of 
+            Some p -> Right <$> do 
+              passport <- fetch p
+              create ValidPassport 
+                with 
+                  verifier = passport.verifier
+                  until = passport.expires
+                  ..
+            None -> Left <$> create InvalidPassport with ..
+
+template ValidPassport 
+  with 
+    investor: Party 
+    requestor: Party 
+    provider: Party 
+    verifier: Party 
+    asOf: Time 
+    until: Time 
+  where 
+    signatory requestor, provider 
+    observer investor
+
+template InvalidPassport 
+  with 
+    investor: Party 
+    requestor: Party 
+    provider: Party 
+    asOf: Time 
+  where 
+    signatory requestor, provider
+    observer investor

@@ -1,0 +1,98 @@
+digraph G {
+compound=true;
+rankdir=LR;
+subgraph cluster_InvalidPassport{
+n0[label=Create][color=green]; 
+n1[label=Archive][color=red]; 
+label=<<table align = "left" border="0" cellborder="0" cellspacing="1">
+<tr><td align="center"><b>InvalidPassport</b></td></tr><tr><td align="left">investor</td></tr> 
+<tr><td align="left">requestor</td></tr> 
+<tr><td align="left">provider</td></tr> 
+<tr><td align="left">asOf</td></tr> 
+</table>>;color=blue
+}subgraph cluster_RequestPassportCheck{
+n2[label=Create][color=green]; 
+n3[label=Archive][color=red]; 
+n4[label=Check][color=red]; 
+label=<<table align = "left" border="0" cellborder="0" cellspacing="1">
+<tr><td align="center"><b>RequestPassportCheck</b></td></tr><tr><td align="left">investor</td></tr> 
+<tr><td align="left">requestor</td></tr> 
+<tr><td align="left">provider</td></tr> 
+</table>>;color=blue
+}subgraph cluster_ValidPassport{
+n5[label=Create][color=green]; 
+n6[label=Archive][color=red]; 
+label=<<table align = "left" border="0" cellborder="0" cellspacing="1">
+<tr><td align="center"><b>ValidPassport</b></td></tr><tr><td align="left">investor</td></tr> 
+<tr><td align="left">requestor</td></tr> 
+<tr><td align="left">provider</td></tr> 
+<tr><td align="left">verifier</td></tr> 
+<tr><td align="left">asOf</td></tr> 
+<tr><td align="left">until</td></tr> 
+</table>>;color=blue
+}subgraph cluster_DocumentationRequest{
+n7[label=Create][color=green]; 
+n8[label=UploadDocuments][color=red]; 
+n9[label=Archive][color=red]; 
+label=<<table align = "left" border="0" cellborder="0" cellspacing="1">
+<tr><td align="center"><b>DocumentationRequest</b></td></tr><tr><td align="left">investor</td></tr> 
+<tr><td align="left">provider</td></tr> 
+<tr><td align="left">prompt</td></tr> 
+<tr><td align="left">verifier</td></tr> 
+<tr><td align="left">originalGranted</td></tr> 
+<tr><td align="left">warning</td></tr> 
+<tr><td align="left">expires</td></tr> 
+<tr><td align="left">existingDocuments</td></tr> 
+</table>>;color=blue
+}subgraph cluster_Passport{
+n10[label=Create][color=green]; 
+n11[label=Archive][color=red]; 
+label=<<table align = "left" border="0" cellborder="0" cellspacing="1">
+<tr><td align="center"><b>Passport</b></td></tr><tr><td align="left">investor</td></tr> 
+<tr><td align="left">provider</td></tr> 
+<tr><td align="left">verifier</td></tr> 
+<tr><td align="left">expires</td></tr> 
+</table>>;color=blue
+}subgraph cluster_PassportRequest{
+n12[label=Create][color=green]; 
+n13[label=RequestDocumentation][color=red]; 
+n14[label=Archive][color=red]; 
+label=<<table align = "left" border="0" cellborder="0" cellspacing="1">
+<tr><td align="center"><b>PassportRequest</b></td></tr><tr><td align="left">investor</td></tr> 
+<tr><td align="left">provider</td></tr> 
+</table>>;color=blue
+}subgraph cluster_ReviewRequest{
+n15[label=Create][color=green]; 
+n16[label=Archive][color=red]; 
+n17[label=ApproveRequest][color=red]; 
+label=<<table align = "left" border="0" cellborder="0" cellspacing="1">
+<tr><td align="center"><b>ReviewRequest</b></td></tr><tr><td align="left">investor</td></tr> 
+<tr><td align="left">provider</td></tr> 
+<tr><td align="left">prompt</td></tr> 
+<tr><td align="left">verifier</td></tr> 
+<tr><td align="left">documents</td></tr> 
+<tr><td align="left">originalGranted</td></tr> 
+</table>>;color=blue
+}subgraph cluster_Support{
+n18[label=Create][color=green]; 
+n19[label=WarnInvestor][color=red]; 
+n20[label=Archive][color=red]; 
+label=<<table align = "left" border="0" cellborder="0" cellspacing="1">
+<tr><td align="center"><b>Support</b></td></tr><tr><td align="left">investor</td></tr> 
+<tr><td align="left">provider</td></tr> 
+<tr><td align="left">verifier</td></tr> 
+<tr><td align="left">granted</td></tr> 
+<tr><td align="left">renewed</td></tr> 
+<tr><td align="left">warning</td></tr> 
+<tr><td align="left">expires</td></tr> 
+<tr><td align="left">documents</td></tr> 
+</table>>;color=blue
+}n4->n0
+n4->n5
+n8->n15
+n13->n7
+n17->n10
+n17->n18
+n19->n7
+
+}

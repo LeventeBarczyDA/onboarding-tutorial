@@ -1,0 +1,34 @@
+module Main where
+
+import Daml.Script
+
+
+setup : Script ()
+setup = script do
+-- user_setup_begin
+
+  cais <- allocatePartyWithHint "CAIS" (PartyIdHint "CAIS")
+  verifier <- allocatePartyWithHint "Verifier" (PartyIdHint "Verifier")
+  fundManager <- allocatePartyWithHint "FundManager" (PartyIdHint "FundManager")
+  
+  caisId <- validateUserId "cais"
+  verifierId <- validateUserId "verifier"
+  fundManagerId <- validateUserId "fundmanager"
+
+  createUser (User caisId (Some cais)) [CanActAs cais]
+  createUser (User verifierId (Some verifier)) [CanActAs verifier]
+  createUser (User fundManagerId (Some fundManager)) [CanActAs fundManager]
+
+
+  -- Users! 
+  aliceId <- validateUserId "alice"
+  alice <- allocatePartyWithHint "Alice" (PartyIdHint "Alice")
+  createUser (User aliceId (Some alice)) [CanActAs alice]
+
+  bobId <- validateUserId "bob"
+  bob <- allocatePartyWithHint "Bob" (PartyIdHint "Bob")
+  createUser (User bobId (Some bob)) [CanActAs bob]
+
+  return ()
+
+-- user_setup_end
