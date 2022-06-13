@@ -2,6 +2,8 @@ module Passport where
 
 import DA.Optional (fromOptional)
 
+import PassportData
+
 template Passport 
   with 
     investor: Party 
@@ -26,14 +28,14 @@ template Support
     renewed: Time
     warning: Time 
     expires: Time 
-    documents: Text 
+    fields: OnboardingFields 
   where 
     signatory investor, provider, verifier 
     ensure renewed < warning && warning < expires 
 
     choice WarnInvestor: ContractId DocumentationRequest 
         with 
-              prompt: Text
+          prompt: Text
       controller provider 
         do 
           now <- getTime 
@@ -41,7 +43,7 @@ template Support
           create DocumentationRequest 
             with 
               originalGranted = Some granted
-              existingDocuments = Some documents
+              existingFields = Some fields
               ..
 
 template PassportRequest 
@@ -65,7 +67,7 @@ template PassportRequest
             with 
               originalGranted = None
               warning = now
-              existingDocuments = None
+              existingFields = None
               ..
 
 template DocumentationRequest 
@@ -78,13 +80,13 @@ template DocumentationRequest
     originalGranted: Optional Time
     warning: Time 
     expires: Time 
-    existingDocuments: Optional Text 
+    existingFields: Optional OnboardingFields 
   where 
     signatory investor, provider 
 
     choice UploadDocuments: ContractId ReviewRequest 
         with 
-          documents: Text 
+          fields: OnboardingFields 
       controller investor 
         do 
           create ReviewRequest with .. 
@@ -95,7 +97,7 @@ template ReviewRequest
     provider: Party 
     prompt: Text 
     verifier: Party 
-    documents: Text
+    fields: OnboardingFields
     originalGranted: Optional Time
   where 
     signatory investor, provider 

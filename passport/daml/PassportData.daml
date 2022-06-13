@@ -1,0 +1,62 @@
+module PassportData where 
+
+
+data OnboardingFields = OnboardingFields 
+  with 
+    privateOnboardingFields: PrivateOnboardingFields
+    protectedOnboardingFields: ProtectedOnboardingFields 
+    publicOnboardingFields: PublicOnboardingFields 
+  deriving (Eq, Show)
+
+data PrivateOnboardingFields = PrivateOnboardingFields 
+  with 
+    w9: ImageUrl 
+    socialSecurityNumber: Decimal 
+    governmentId: ImageUrl 
+    w2s: [ImageUrl]
+  deriving (Eq, Show)
+
+data SingleJoint = Single | Joint deriving (Eq, Show)
+
+data ProtectedOnboardingFields = ProtectedOnboardingFields
+  with 
+     amlAndUsSanctionsCertification: ImageUrl 
+     bankName: Text 
+     bankAccountNumber: Text 
+     sufficientAssets: Bool 
+     sufficientNetWorth: Bool 
+     sufficientIncome: Bool 
+     custodian: Optional CustodyInfo 
+     accreditationStatus: SingleJoint 
+     qualifiedPurchaser: Text 
+  deriving (Eq, Show)
+
+data CustodyInfo = CustodyInfo 
+  with 
+    custodianName: Text 
+    accountNumber: Text 
+  deriving (Eq, Show)
+
+data PublicOnboardingFields = PublicOnboardingFields 
+  with 
+    usCitizen: Bool 
+    pronoun: (Text, Text, Text)
+    firstName: Text 
+    lastName: Text 
+    dob: Date 
+    address: Address 
+    gender: Text
+    emailAddress: Text 
+    mobileNumber: Text 
+  deriving (Eq, Show)
+
+data Address = Address 
+  with 
+    address1: Text 
+    address2: Optional Text 
+    city: Text 
+    state: Text 
+    zip: Decimal 
+  deriving (Eq, Show)
+
+type ImageUrl = Text
