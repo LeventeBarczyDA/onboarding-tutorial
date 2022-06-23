@@ -11,7 +11,7 @@ data OnboardingFields = OnboardingFields
 data PrivateOnboardingFields = PrivateOnboardingFields 
   with 
     w9: ImageUrl 
-    socialSecurityNumber: Decimal 
+    socialSecurityNumber: Decimal -- Public
     governmentId: ImageUrl 
     w2s: [ImageUrl]
   deriving (Eq, Show)
@@ -41,10 +41,10 @@ data PublicOnboardingFields = PublicOnboardingFields
   with 
     usCitizen: Bool 
     pronoun: (Text, Text, Text)
-    firstName: Text 
-    lastName: Text 
+    firstName: Text -- Public
+    lastName: Text  -- Public
     dob: Date 
-    address: Address 
+    address: Address -- Public
     gender: Text
     emailAddress: Text 
     mobileNumber: Text 
@@ -60,3 +60,12 @@ data Address = Address
   deriving (Eq, Show)
 
 type ImageUrl = Text
+
+data KycData = KycData 
+  with 
+    firstName: Text -- Public
+    lastName: Text  -- Public
+    dob: Date 
+    socialSecurityNumber: Decimal
+    address: Address
+  deriving (Eq, Show)

@@ -90,6 +90,7 @@ template DocumentationRequest
       controller investor 
         do 
           create ReviewRequest with .. 
+          -- Trifurcate workflow based on KYC (trulio), AML (custodian), Verified cred (trinsic) 
 
 template ReviewRequest 
   with 
@@ -103,12 +104,163 @@ template ReviewRequest
     signatory investor, provider 
     observer verifier
 
+    choice Trifurcate: (ContractId ReviewRequestSync, ContractId KycRequest, ContractId AmlRequest, ContractId CredRequest)
+        with 
+          kycReviewer: Party 
+          amlReviewer: Party 
+          credReviewer: Party
+          syncId: Text
+      controller verifier 
+        do 
+          kycRequest <- create KycRequest with ..
+          amlRequest <- create AmlRequest with .. 
+          credRequest <- create CredRequest with ..
+
+          sync <- create ReviewRequestSync with ..
+
+          return (sync, kycRequest, amlRequest, credRequest)
+
+
+template KycRequest 
+  with 
+    investor: Party 
+    provider: Party 
+    prompt: Text 
+    verifier: Party 
+    fields: OnboardingFields
+    originalGranted: Optional Time
+    kycReviewer: Party 
+    syncId: Text
+  where 
+    signatory investor, provider 
+    observer verifier
+
+    choice ApproveKyc: ContractId ApprovedKycRequest
+      controller kycReviewer 
+        do 
+          create ApprovedKycRequest with ..
+
+template ApprovedKycRequest 
+  with 
+    investor: Party 
+    provider: Party 
+    prompt: Text 
+    verifier: Party 
+    fields: OnboardingFields
+    originalGranted: Optional Time
+    kycReviewer: Party 
+    syncId: Text
+  where 
+    signatory investor, provider, kycReviewer 
+
+    key (verifier, investor, syncId): (Party, Party, Text)
+    maintainer key._1
+
+    choice ArchiveKycRequest: () 
+      controller verifier 
+        do pure ()
+
+template AmlRequest 
+  with 
+    investor: Party 
+    provider: Party 
+    prompt: Text 
+    verifier: Party 
+    fields: OnboardingFields
+    originalGranted: Optional Time
+    amlReviewer: Party 
+    syncId: Text
+  where 
+    signatory investor, provider 
+    observer verifier
+
+    choice ApproveAml: ContractId ApprovedAmlRequest
+      controller amlReviewer 
+        do 
+          create ApprovedAmlRequest with ..
+
+template ApprovedAmlRequest 
+  with 
+    investor: Party 
+    provider: Party 
+    prompt: Text 
+    verifier: Party 
+    fields: OnboardingFields
+    originalGranted: Optional Time
+    amlReviewer: Party 
+    syncId: Text
+  where 
+    signatory investor, provider, amlReviewer 
+
+    key (verifier, investor, syncId): (Party, Party, Text)
+    maintainer key._1
+
+    choice ArchiveAmlRequest: () 
+      controller verifier 
+        do pure ()
+
+template CredRequest 
+  with 
+    investor: Party 
+    provider: Party 
+    prompt: Text 
+    verifier: Party 
+    fields: OnboardingFields
+    originalGranted: Optional Time
+    credReviewer: Party 
+    syncId: Text
+  where 
+    signatory investor, provider 
+    observer verifier
+
+    choice ApproveCred: ContractId ApprovedCredRequest
+      controller credReviewer 
+        do 
+          create ApprovedCredRequest with ..
+
+template ApprovedCredRequest 
+  with 
+    investor: Party 
+    provider: Party 
+    prompt: Text 
+    verifier: Party 
+    fields: OnboardingFields
+    originalGranted: Optional Time
+    credReviewer: Party 
+    syncId: Text
+  where 
+    signatory investor, provider, credReviewer 
+
+    key (verifier, investor, syncId): (Party, Party, Text)
+    maintainer key._1
+
+    choice ArchiveCredRequest: () 
+      controller verifier 
+        do pure ()
+
+template ReviewRequestSync 
+  with 
+    investor: Party 
+    provider: Party 
+    prompt: Text 
+    verifier: Party 
+    fields: OnboardingFields
+    originalGranted: Optional Time
+    credReviewer: Party 
+    syncId: Text
+  where 
+    signatory investor, provider, credReviewer 
+
     choice ApproveRequest: (ContractId Passport, ContractId Support)
       with 
         warning: Time 
         expires: Time 
       controller verifier
         do 
+          exerciseByKey @ApprovedKycRequest (verifier, investor, syncId) ArchiveKycRequest 
+          exerciseByKey @ApprovedAmlRequest (verifier, investor, syncId) ArchiveAmlRequest 
+          exerciseByKey @ApprovedCredRequest (verifier, investor, syncId) ArchiveCredRequest 
+
           now <- getTime
           passport <- do 
             passportLookup <- lookupByKey @Passport (provider, investor) 
