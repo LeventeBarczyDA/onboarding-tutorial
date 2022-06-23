@@ -2,33 +2,49 @@ module Main where
 
 import Daml.Script
 
+import Passport
+
+
+demoParty: Text -> Text -> Script Party
+demoParty partyLabel userLabel = do
+  party <- allocatePartyWithHint partyLabel (PartyIdHint partyLabel)
+  userId <- validateUserId userLabel 
+  createUser (User userId (Some party)) [CanActAs party]
+  return party
 
 setup : Script ()
 setup = script do
 -- user_setup_begin
 
-  cais <- allocatePartyWithHint "CAIS" (PartyIdHint "CAIS")
-  verifier <- allocatePartyWithHint "Verifier" (PartyIdHint "Verifier")
-  fundManager <- allocatePartyWithHint "FundManager" (PartyIdHint "FundManager")
+  cais <- demoParty "CAIS" "cais"
+  verifier <- demoParty "Verifier" "verifier"
+  alice <- demoParty "Alice" "alice"
+  kycReviewer <- demoParty "KycVerifier" "trulioo"
+  amlReviewer <- demoParty "AmlVerifier" "custodian"
+  credReviewer <- demoParty "CredVerifier" "trinsic"
+
+  now <- getTime
+
+  passportRequest <- submit alice $ createCmd PassportRequest 
+    with 
+      investor = alice 
+      provider = cais 
+
+  docRequest <- submit cais $ exerciseCmd passportRequest RequestDocumentation 
+    with 
+      prompt = "Por favor"
+      verifier
+      expires = now 
+
+  reviewRequest <- submit alice $ exerciseCmd docRequest UploadDocuments 
+    with 
+      fields = "Foo"
+
+  submit verifier $ exerciseCmd reviewRequest Trifurcate 
+    with 
+      syncId = "First!"
+      ..
   
-  caisId <- validateUserId "cais"
-  verifierId <- validateUserId "verifier"
-  fundManagerId <- validateUserId "fundmanager"
-
-  createUser (User caisId (Some cais)) [CanActAs cais]
-  createUser (User verifierId (Some verifier)) [CanActAs verifier]
-  createUser (User fundManagerId (Some fundManager)) [CanActAs fundManager]
-
-
-  -- Users! 
-  aliceId <- validateUserId "alice"
-  alice <- allocatePartyWithHint "Alice" (PartyIdHint "Alice")
-  createUser (User aliceId (Some alice)) [CanActAs alice]
-
-  bobId <- validateUserId "bob"
-  bob <- allocatePartyWithHint "Bob" (PartyIdHint "Bob")
-  createUser (User bobId (Some bob)) [CanActAs bob]
-
   return ()
 
 -- user_setup_end

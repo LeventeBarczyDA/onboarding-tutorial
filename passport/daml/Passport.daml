@@ -132,8 +132,8 @@ template KycRequest
     kycReviewer: Party 
     syncId: Text
   where 
-    signatory investor, provider 
-    observer verifier
+    signatory investor, provider, verifier
+    observer kycReviewer
 
     choice ApproveKyc: ContractId ApprovedKycRequest
       controller kycReviewer 
@@ -151,7 +151,7 @@ template ApprovedKycRequest
     kycReviewer: Party 
     syncId: Text
   where 
-    signatory investor, provider, kycReviewer 
+    signatory investor, provider, kycReviewer, verifier
 
     key (verifier, investor, syncId): (Party, Party, Text)
     maintainer key._1
@@ -171,8 +171,8 @@ template AmlRequest
     amlReviewer: Party 
     syncId: Text
   where 
-    signatory investor, provider 
-    observer verifier
+    signatory investor, provider, verifier
+    observer amlReviewer
 
     choice ApproveAml: ContractId ApprovedAmlRequest
       controller amlReviewer 
@@ -190,7 +190,7 @@ template ApprovedAmlRequest
     amlReviewer: Party 
     syncId: Text
   where 
-    signatory investor, provider, amlReviewer 
+    signatory investor, provider, amlReviewer, verifier
 
     key (verifier, investor, syncId): (Party, Party, Text)
     maintainer key._1
@@ -210,8 +210,8 @@ template CredRequest
     credReviewer: Party 
     syncId: Text
   where 
-    signatory investor, provider 
-    observer verifier
+    signatory investor, provider, verifier
+    observer credReviewer
 
     choice ApproveCred: ContractId ApprovedCredRequest
       controller credReviewer 
@@ -229,7 +229,7 @@ template ApprovedCredRequest
     credReviewer: Party 
     syncId: Text
   where 
-    signatory investor, provider, credReviewer 
+    signatory investor, provider, credReviewer, verifier
 
     key (verifier, investor, syncId): (Party, Party, Text)
     maintainer key._1
@@ -249,7 +249,7 @@ template ReviewRequestSync
     credReviewer: Party 
     syncId: Text
   where 
-    signatory investor, provider, credReviewer 
+    signatory investor, provider, verifier 
 
     choice ApproveRequest: (ContractId Passport, ContractId Support)
       with 

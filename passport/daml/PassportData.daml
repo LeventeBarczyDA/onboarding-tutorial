@@ -1,7 +1,8 @@
 module PassportData where 
 
+type OnboardingFields = Text --for ease of use with the navigator
 
-data OnboardingFields = OnboardingFields 
+data OnboardingFieldsBak = OnboardingFieldsBak
   with 
     privateOnboardingFields: PrivateOnboardingFields
     protectedOnboardingFields: ProtectedOnboardingFields 
